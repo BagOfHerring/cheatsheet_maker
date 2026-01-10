@@ -1,6 +1,6 @@
 # Cheatsheet Maker
 
-作者复习电电时突然冒出的想法，基于antigravity全程vibe coding做的cheatsheet生成器，目前支持读取pdf和ppt文件来快捷生成a4大小的cheatsheet，经测试把一页a4分成四列刚刚好。
+作者复习电电时突然冒出的想法，基于antigravity全程vibe coding做的cheatsheet生成器，目前支持读取pdf和ppt文件来快捷生成a4大小的cheatsheet，经测试把一页a4分成四列刚刚好。推荐搭配雨课堂爬虫食用。
 
 赞美伟大的gemini。
 

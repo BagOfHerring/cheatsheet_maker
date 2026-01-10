@@ -2,3 +2,4 @@ customtkinter
 pymupdf
 Pillow
 comtypes
+pywin32

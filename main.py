@@ -17,8 +17,7 @@ RES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "res")
 CACHE_DIR = os.path.join(RES_DIR, ".cache")
 
 # A4 Size at 300 DPI
-A4_WIDTH = 2480  # 8.27 inch * 300
-A4_HEIGHT = 3508  # 11.69 inch * 300
+A4_W_PTS, A4_H_PTS = 595.0, 842.0
 COLUMNS = 4
 
 # Settings
@@ -891,149 +890,89 @@ class CheatSheetMaker(ctk.CTk):
             try:
                 doc = fitz.open(item["file"])
                 p = doc.load_page(item["page"])
-
-                rect = p.rect
-                zoom = col_w / rect.width
-                mat = fitz.Matrix(zoom, zoom)
-                pix = p.get_pixmap(matrix=mat)
+                zoom = col_w / p.rect.width
+                pix = p.get_pixmap(matrix=fitz.Matrix(zoom, zoom))
                 img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
 
                 # Check if item has a stored split preference
-                # If not, and it overflows, we ask.
-                # 'split_pref' in item: True (Split), False (Next Col)
-
-                # Calculate if it fits
-                available_first = (full_a4_h - PAGE_MARGIN_V) - cur_y
-                if img.height <= available_first:
-                    # Fits entirely
-                    pg_img.paste(img, (int(cur_x), int(cur_y)))
-                    cur_y += img.height + ITEM_GUTTER
-                    doc.close()
-                    continue
-
-                # It overflows.
-                # Check preference
-                should_split = item.get("split_pref")
-
-                if should_split is None:
-                    # Only ask if this is NOT a preview run?
-                    # Wait, we want visual feedback. But asking 100 times is bad.
-                    # We only ask ONCE per item.
-                    # This logic runs on main thread? Yes, _add_page -> _refresh_preview -> here.
-                    # So messagebox is safe.
-
-                    # But we don't want to block every refresh.
-                    # Only ask if we are "adding" it? No, layout changes might make things overflow that didn't.
-                    # Let's ask. It will block, but only once per unknown overflow.
-
-                    res = messagebox.askyesno(
-                        "Layout Overflow",
-                        f"Item {i_item+1} doesn't fit in current column.\nSplit it across columns?",
-                    )
-                    should_split = res
-                    item["split_pref"] = res  # Save decision
-
-                if not should_split:
-                    # Move to next column entirely
+                # If not, and it overflows, we do not ask.
+                if cur_y + img.height > (full_a4_h - PAGE_MARGIN_V):
                     cur_col += 1
                     cur_y = PAGE_MARGIN_V
-                    cur_x = PAGE_MARGIN_H + cur_col * (col_w + COL_GUTTER)
-
                     if cur_col >= COLUMNS:
-                        # New Page
                         pg_imgs.append(pg_img)
-                        pg_img = Image.new("RGB", (full_a4_w, full_a4_h), "white")
-                        draw = ImageDraw.Draw(pg_img)
-                        draw_grid(draw, full_a4_h)
+                        pg_img = Image.new("RGB", (A4_WIDTH, A4_HEIGHT), "white")
                         cur_col = 0
-                        cur_x = PAGE_MARGIN_H
-                        cur_y = PAGE_MARGIN_V
-
-                    # Now it's at top of new col. Does it fit even a full column?
-                    # If it's taller than a FULL column, we MUST split or scale?
-                    # Assuming for now we force split if > full col?
-                    # Or just let it overflow bottom if user said "No Split"?
-                    # Let's simple paste it, allowing it to potentially clip if user insisted on no split but it's HUGE.
-
-                    # Actually, if it's huge, we probably should auto-split?
-                    # But let's respect "No Split" -> Paste and maybe clip. Correct behavior for "No Split".
-
-                    # BUT, after moving to new col, we need to check vertical space AGAIN?
-                    # Yes.
-
-                    if img.height > (full_a4_h - 2 * PAGE_MARGIN_V):
-                        # It is taller than a single column.
-                        # It will be clipped if we don't split.
-                        # We'll just paste and let it handle next items below it (which might be off page).
-                        # Effectively it runs off page.
-                        pass
-
-                    pg_img.paste(img, (int(cur_x), int(cur_y)))
-                    cur_y += img.height + ITEM_GUTTER
-
-                else:
-                    # SPLIT LOGIC
-                    img_y_cursor = 0
-                    while img_y_cursor < img.height:
-                        available_h = (full_a4_h - PAGE_MARGIN_V) - cur_y
-
-                        if available_h <= 0:
-                            # Full column filled? Move to next
-                            cur_col += 1
-                            cur_y = PAGE_MARGIN_V
-                            cur_x = PAGE_MARGIN_H + cur_col * (col_w + COL_GUTTER)
-
-                            if cur_col >= COLUMNS:
-                                pg_imgs.append(pg_img)
-                                pg_img = Image.new(
-                                    "RGB", (full_a4_w, full_a4_h), "white"
-                                )
-                                draw = ImageDraw.Draw(pg_img)
-                                draw_grid(draw, full_a4_h)
-                                cur_col = 0
-                                cur_x = PAGE_MARGIN_H
-                                cur_y = PAGE_MARGIN_V
-                            continue  # Re-evaluate available_h
-
-                        remaining_src = img.height - img_y_cursor
-
-                        if remaining_src <= available_h:
-                            chunk = img.crop(
-                                (
-                                    0,
-                                    img_y_cursor,
-                                    img.width,
-                                    img_y_cursor + remaining_src,
-                                )
-                            )
-                            pg_img.paste(chunk, (int(cur_x), int(cur_y)))
-                            cur_y += remaining_src + ITEM_GUTTER
-                            img_y_cursor += remaining_src
-                        else:
-                            chunk = img.crop(
-                                (0, img_y_cursor, img.width, img_y_cursor + available_h)
-                            )
-                            pg_img.paste(chunk, (int(cur_x), int(cur_y)))
-                            cur_y += available_h
-                            img_y_cursor += available_h
-
+                
+                cur_x = PAGE_MARGIN_H + cur_col * (col_w + COL_GUTTER)
+                pg_img.paste(img, (int(cur_x), int(cur_y)))
+                cur_y += img.height + ITEM_GUTTER
                 doc.close()
-            except Exception as e:
-                print(e)
+            except:
+                pass
 
         pg_imgs.append(pg_img)
         return pg_imgs
 
     def _export(self):
-        pages = self._render_pages()
-        if not pages:
+        if not self.cheatsheet_items:
+            messagebox.showwarning("Warning", "Empty!")
             return
-        path = filedialog.asksaveasfilename(defaultextension=".pdf")
-        if path:
-            pages[0].save(
-                path, save_all=True, append_images=pages[1:], resolution=300.0
-            )
+
+        save_path = filedialog.asksaveasfilename(defaultextension=".pdf", filetypes=[("PDF文件", "*.pdf")])
+        if not save_path:
+            return
+
+        out_doc = fitz.open()
+        
+        MARGIN_V = 20
+        MARGIN_H = 15
+        GUTTER = 10
+        COL_WIDTH = (A4_W_PTS - 2 * MARGIN_H - (COLUMNS - 1) * GUTTER) / COLUMNS
+
+        def add_target_page():
+            p = out_doc.new_page(width=A4_W_PTS, height=A4_H_PTS)
+            for c in range(1, COLUMNS):
+                lx = MARGIN_H + c * COL_WIDTH + (c - 1) * GUTTER + GUTTER / 2
+                p.draw_line((lx, 0), (lx, A4_H_PTS), color=(0.9, 0.9, 0.9), width=0.3)
+            return p
+
+        current_page = add_target_page()
+        cur_col = 0
+        cur_y = MARGIN_V
+
+        for item in self.cheatsheet_items:
+            try:
+                src_doc = fitz.open(item["file"])
+                src_page = src_doc.load_page(item["page"])
+                
+                scale = COL_WIDTH / src_page.rect.width
+                target_h = src_page.rect.height * scale
+
+                if cur_y + target_h > (A4_H_PTS - MARGIN_V):
+                    cur_col += 1
+                    cur_y = MARGIN_V
+                    
+                    if cur_col >= COLUMNS:
+                        current_page = add_target_page()
+                        cur_col = 0
+                
+                cur_x = MARGIN_H + cur_col * (COL_WIDTH + GUTTER)
+                target_rect = fitz.Rect(cur_x, cur_y, cur_x + COL_WIDTH, cur_y + target_h)
+
+                current_page.show_pdf_page(target_rect, src_doc, item["page"])
+                
+                cur_y += target_h + 5
+                src_doc.close()
+            except Exception as e:
+                print(f"Export item error: {e}")
+
+        try:
+            out_doc.save(save_path, garbage=3, deflate=True)
+            out_doc.close()
             messagebox.showinfo("Done", "Exported!")
+        except Exception as e:
+            messagebox.showerror("Error", f"failed: {e}")
 
 
 if __name__ == "__main__":

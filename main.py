@@ -327,7 +327,7 @@ class CheatSheetMaker(ctk.CTk):
         )
         self.btn_next.pack(side="left", padx=5)
 
-        self.paned.add(self.center_frame, minsize=400)  # Add center
+        self.paned.add(self.center_frame, minsize=1300)  # Add center
 
         # --- RIGHT SIDEBAR ---
         self.right_frame = ctk.CTkFrame(self.paned, corner_radius=0)
@@ -391,7 +391,7 @@ class CheatSheetMaker(ctk.CTk):
         )
 
         # Preview State
-        self.preview_zoom = 0.4
+        self.preview_zoom = 0.33
         self.preview_tk_images = {}  # Keep references
 
         # Bind Preview Events
@@ -901,7 +901,9 @@ class CheatSheetMaker(ctk.CTk):
                     cur_y = PAGE_MARGIN_V
                     if cur_col >= COLUMNS:
                         pg_imgs.append(pg_img)
-                        pg_img = Image.new("RGB", (A4_WIDTH, A4_HEIGHT), "white")
+                        pg_img = Image.new("RGB", (full_a4_w, full_a4_h), "white")
+                        draw = ImageDraw.Draw(pg_img)
+                        draw_grid(draw, full_a4_h)
                         cur_col = 0
                 
                 cur_x = PAGE_MARGIN_H + cur_col * (col_w + COL_GUTTER)

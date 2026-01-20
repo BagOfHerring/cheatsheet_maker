@@ -972,9 +972,90 @@ class CheatSheetMaker(ctk.CTk):
         try:
             out_doc.save(save_path, garbage=3, deflate=True)
             out_doc.close()
-            messagebox.showinfo("Done", "Exported!")
+            # After successful export, generate the blank '白板' PDF next to saved file
+            try:
+                self._create_blank_for_pdf(save_path)
+                messagebox.showinfo("Done", f"Exported!\nA blank file has been generated in the same directory.")
+            except Exception as e:
+                messagebox.showwarning("Exported", f"Exported, but blank file failed: {e}")
         except Exception as e:
             messagebox.showerror("Error", f"failed: {e}")
+            
+    def _create_blank_for_pdf(self, src_pdf_path: str):
+        """Create a single-page blank PDF with dashed boundary and divider lines.
+
+        The blank PDF is saved next to src_pdf_path with the name '<basename>_白板.pdf'.
+        """
+        if not os.path.exists(src_pdf_path):
+            raise FileNotFoundError(src_pdf_path)
+
+        doc = fitz.open(src_pdf_path)
+        try:
+            page = doc.load_page(0)
+            media = page.mediabox if hasattr(page, "mediabox") else page.rect
+            # Use a safe printable inset (10 mm ~ 28.35 pts)
+            safe_margin_pts = 28.35
+
+            page_w = media.width
+            page_h = media.height
+
+            left = safe_margin_pts
+            top = safe_margin_pts
+            right = max(page_w - safe_margin_pts, left + 1)
+            bottom = max(page_h - safe_margin_pts, top + 1)
+
+            out = fitz.open()
+
+            dash_len = 6
+            gap_len = 6
+
+            def draw_dashed_line_on_page(page_obj, x0, y0, x1, y1):
+                dx = x1 - x0
+                dy = y1 - y0
+                dist = math.hypot(dx, dy)
+                if dist == 0:
+                    return
+                ux = dx / dist
+                uy = dy / dist
+                pos = 0.0
+                while pos < dist:
+                    seg_end = min(pos + dash_len, dist)
+                    sx = x0 + ux * pos
+                    sy = y0 + uy * pos
+                    ex = x0 + ux * seg_end
+                    ey = y0 + uy * seg_end
+                    page_obj.draw_line((sx, sy), (ex, ey), color=(0, 0, 0), width=0.5)
+                    pos = seg_end + gap_len
+
+            # Create two identical blank pages (small loop as requested)
+            for _ in range(2):
+                p = out.new_page(width=page_w, height=page_h)
+
+                # Outer dashed rectangle
+                draw_dashed_line_on_page(p, left, top, right, top)
+                draw_dashed_line_on_page(p, right, top, right, bottom)
+                draw_dashed_line_on_page(p, right, bottom, left, bottom)
+                draw_dashed_line_on_page(p, left, bottom, left, top)
+
+                # Draw vertical divider lines for columns
+                col_count = COLUMNS if COLUMNS > 0 else 4
+                printable_w = right - left
+                gutter = 10
+                col_w = (printable_w - (col_count - 1) * gutter) / col_count
+                for c in range(1, col_count):
+                    lx = left + c * col_w + (c - 1) * gutter + gutter / 2
+                    p.draw_line((lx, top), (lx, bottom), color=(0.6, 0.6, 0.6), width=0.5)
+
+            out_dir = os.path.dirname(src_pdf_path)
+            base = os.path.splitext(os.path.basename(src_pdf_path))[0]
+            out_name = f"{base}_白板.pdf"
+            out_path = os.path.join(out_dir, out_name)
+            out.save(out_path)
+            out.close()
+        finally:
+            doc.close()
+        # refresh tree to show new file
+        self._load_files()
 
 
 if __name__ == "__main__":

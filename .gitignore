@@ -11,7 +11,7 @@ env.bak/
 venv.bak/
 
 # Project specific
-res/.cache/
+res/
 *.log
 .vscode/
 .idea/

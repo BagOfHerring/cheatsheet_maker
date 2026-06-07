@@ -1,5 +1,5 @@
 customtkinter
 pymupdf
 Pillow
-comtypes
-pywin32
+comtypes; platform_system == "Windows"
+pywin32; platform_system == "Windows"

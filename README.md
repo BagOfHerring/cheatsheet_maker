@@ -6,10 +6,11 @@
 
 ## 环境要求
 
-- ~~Windows 操作系统~~
+- Windows / macOS / Linux 均可运行 PDF 相关功能
 - Python 3.x
-- Microsoft PowerPoint (仅 PPT 转换功能需要)
-- 依赖库: `customtkinter`, `PyMuPDF` (fitz), `Pillow`, `pywin32`
+- Microsoft PowerPoint (仅 Windows 下的 PPT 转 PDF 功能需要)
+- 依赖库: `customtkinter`, `PyMuPDF` (fitz), `Pillow`
+- Windows PPT 转换依赖: `pywin32`, `comtypes`
 
 ## 部署/安装说明
 
@@ -22,6 +23,15 @@
    ```
 
 2. 创建并激活 `.venv`:
+
+   macOS / Linux / Git Bash:
+
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   ```
+
+   Windows PowerShell:
 
    ```powershell
    python -m venv .venv
@@ -58,6 +68,15 @@
    ```
 
 后续再次使用时，只需要重新激活 `.venv` 后启动程序:
+
+macOS / Linux / Git Bash:
+
+```bash
+source .venv/bin/activate
+python main.py
+```
+
+Windows PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1

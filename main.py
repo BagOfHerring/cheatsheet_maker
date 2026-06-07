@@ -11,7 +11,6 @@ import tkinter.ttk as ttk
 import customtkinter as ctk
 from PIL import Image, ImageTk, ImageDraw
 import fitz  # PyMuPDF
-import win32com.client  # For PPT conversion on Windows
 
 RES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "res")
 CACHE_DIR = os.path.join(RES_DIR, ".cache")

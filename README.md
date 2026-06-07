@@ -6,7 +6,7 @@
 
 ## 环境要求
 
-～～Windows 操作系统～～
+- ~~Windows 操作系统~~
 - Python 3.x
 - Microsoft PowerPoint (仅 PPT 转换功能需要)
 - 依赖库: `customtkinter`, `PyMuPDF` (fitz), `Pillow`, `pywin32`

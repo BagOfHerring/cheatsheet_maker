@@ -1,12 +1,6 @@
 # Cheatsheet Maker
 
-作者复习电电时突然冒出的想法，基于antigravity全程vibe coding做的cheatsheet生成器，目前支持读取pdf和ppt文件来快捷生成a4大小的cheatsheet，经测试把一页a4分成四列刚刚好。推荐搭配雨课堂爬虫食用。
-
-赞美伟大的gemini。
-
-## UI 参考与开源声明
-
-当前四栏面板布局和控制面板层级参考了开源项目 [Tabler](https://github.com/tabler/tabler) 的 dashboard/admin panel 设计思路。Tabler 使用 [MIT License](https://github.com/tabler/tabler/blob/dev/LICENSE)。本项目没有复制 Tabler 的源码或素材，仅参考其开源软件面板的信息层级、分栏和控制区组织方式，并使用 Python Tk / CustomTkinter 自行实现。
+作者于2025fall复习电电时突发奇想，用antigravity搓出来的cheatsheetmaker，后于2026.6使用codex重构。目前支持读取pdf来快捷生成a4大小的cheatsheet，经测试把一页a4分成四列刚刚好。推荐搭配雨课堂爬虫食用。
 
 ## 环境要求
 
@@ -145,3 +139,7 @@ python main.py
 ## 注意事项
 
 - 程序会自动将转换后的 PPT 缓存为 PDF 文件保存在 `res/.cache` 目录中，下次打开同一文件时无需等待转换。
+
+## Acknowledgements
+
+Cheatsheet Maker's editor layout takes product-design inspiration from [Tabler](https://github.com/tabler/tabler). Third-party reference and licensing notes are documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

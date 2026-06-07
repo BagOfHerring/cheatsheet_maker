@@ -6,21 +6,63 @@
 
 ## 环境要求
 
-- Windows 操作系统
+- ～Windows 操作系统～
 - Python 3.x
 - Microsoft PowerPoint (仅 PPT 转换功能需要)
 - 依赖库: `customtkinter`, `PyMuPDF` (fitz), `Pillow`, `pywin32`
 
-## 安装说明
+## 部署/安装说明
 
-1. 安装项目依赖:
+推荐使用项目内 `.venv` 虚拟环境部署，避免依赖安装到全局 Python 环境中。
 
-   ```bash
-   pip install -r requirements.txt
+1. 进入项目目录:
+
+   ```powershell
+   cd path\to\cheatsheet_maker
    ```
 
-2. 准备素材:
+2. 创建并激活 `.venv`:
+
+   ```powershell
+   python -m venv .venv
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+   如果使用 `cmd`，激活命令改为:
+
+   ```bat
+   .\.venv\Scripts\activate.bat
+   ```
+
+   如果 PowerShell 提示禁止运行脚本，可在当前终端执行:
+
+   ```powershell
+   Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+   .\.venv\Scripts\Activate.ps1
+   ```
+
+3. 安装项目依赖:
+
+   ```powershell
+   python -m pip install --upgrade pip
+   python -m pip install -r requirements.txt
+   ```
+
+4. 准备素材:
    将你的 PDF 或 PPT 课件/资料放入 `res` 文件夹中 (支持子文件夹分类)。
+
+5. 启动程序:
+
+   ```powershell
+   python main.py
+   ```
+
+后续再次使用时，只需要重新激活 `.venv` 后启动程序:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python main.py
+```
 
 ## 使用指南
 

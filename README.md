@@ -22,6 +22,18 @@
    cd path\to\cheatsheet_maker
    ```
 
+   macOS 如果使用 Homebrew Python，先确认 Tk 支持可用:
+
+   ```bash
+   python -c "import tkinter; print(tkinter.TkVersion)"
+   ```
+
+   如果提示 `ModuleNotFoundError: No module named '_tkinter'`，需要安装与 Python 版本匹配的 Tk 包，例如 Python 3.14:
+
+   ```bash
+   brew install python-tk@3.14
+   ```
+
 2. 创建并激活 `.venv`:
 
    macOS / Linux / Git Bash:
